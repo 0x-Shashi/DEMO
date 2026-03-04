@@ -1,0 +1,265 @@
+'use client';
+
+import { useEffect, useState, use } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button, Input, Select, Loading } from '@/components/ui';
+
+const facilityOptions = [
+  'Projector',
+  'Whiteboard',
+  'Smart Board',
+  'AC',
+  'Computer',
+  'Speaker',
+  'Mic',
+  'Video Conferencing',
+  'Lab Equipment',
+];
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export default function EditRoomPage({ params }: Props) {
+  const { id } = use(params);
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    building: '',
+    floor: '',
+    type: 'lecture',
+    capacity: '',
+    facilities: [] as string[],
+    isAvailable: true,
+    isShared: false,
+  });
+
+  useEffect(() => {
+    fetchRoom();
+  }, [id]);
+
+  const fetchRoom = async () => {
+    try {
+      const response = await fetch(`/api/coordinator/rooms/${id}`);
+      if (response.ok) {
+        const room = await response.json();
+        setFormData({
+          name: room.name,
+          building: room.building,
+          floor: room.floor,
+          type: room.type,
+          capacity: room.capacity.toString(),
+          facilities: room.facilities || [],
+          isAvailable: room.isAvailable,
+          isShared: !room.department,
+        });
+      } else {
+        setError('Room not found');
+      }
+    } catch {
+      setError('Failed to fetch room');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/coordinator/rooms/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          capacity: parseInt(formData.capacity),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push('/coordinator/rooms');
+      } else {
+        setError(data.error || 'Failed to update room');
+      }
+    } catch {
+      setError('Failed to update room');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleFacility = (facility: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      facilities: prev.facilities.includes(facility)
+        ? prev.facilities.filter((f) => f !== facility)
+        : [...prev.facilities, facility],
+    }));
+  };
+
+  if (loading) {
+    return <Loading text="Loading room..." />;
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <Link
+          href="/coordinator/rooms"
+          className="text-indigo-600 hover:text-indigo-700 text-sm mb-2 inline-block"
+        >
+          ← Back to Rooms
+        </Link>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Edit Room
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Update room information
+        </p>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Room Name/Number *
+            </label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g., Room 101, Lab A1"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Building *
+            </label>
+            <Input
+              value={formData.building}
+              onChange={(e) => setFormData({ ...formData, building: e.target.value })}
+              placeholder="e.g., Main Building, Block A"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Floor *
+            </label>
+            <Input
+              value={formData.floor}
+              onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
+              placeholder="e.g., Ground, 1, 2"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Type *
+            </label>
+            <Select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            >
+              <option value="lecture">Lecture Hall</option>
+              <option value="lab">Laboratory</option>
+              <option value="seminar">Seminar Room</option>
+              <option value="workshop">Workshop</option>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Capacity (seats) *
+            </label>
+            <Input
+              type="number"
+              value={formData.capacity}
+              onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+              placeholder="e.g., 60"
+              min="1"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isAvailable}
+                onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
+                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              />
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                Available for scheduling
+              </span>
+            </label>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isShared}
+                onChange={(e) => setFormData({ ...formData, isShared: e.target.checked })}
+                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              />
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                Shared room (available to all departments)
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Facilities
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {facilityOptions.map((facility) => (
+              <button
+                key={facility}
+                type="button"
+                onClick={() => toggleFacility(facility)}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  formData.facilities.includes(facility)
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {facility}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <Link href="/coordinator/rooms">
+            <Button type="button" variant="secondary">
+              Cancel
+            </Button>
+          </Link>
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}

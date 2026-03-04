@@ -41,75 +41,61 @@ yarn-error.log*
 next-env.d.ts
 
 # ========================================
-# PHASE 2 - SHOWING ONLY 20% OF PROJECT
+# PHASE 3 - SHOWING 50% OF PROJECT
 # ========================================
 
 # Hide internal guides/documentation
 /Guide/
 
-# Hide most app pages - keeping only basic structure
-/app/admin/batches/
+# Hide specific admin pages - showing most management features now
 /app/admin/departments/[id]/
 /app/admin/departments/new/
 /app/admin/reports/
-/app/admin/rooms/
-/app/admin/settings/
-/app/admin/subjects/
-/app/admin/time-slots/
-/app/admin/timetables/
-/app/admin/users/
-/app/admin/profile/
+/app/admin/settings/ai/
 
-/app/coordinator/
-/app/faculty/
+# Show: dashboard, batches, rooms, subjects, time-slots, users, basic timetables
+# Hide: advanced reports, AI settings
+
+# Hide HOD and Student portals (Phase 4)
 /app/hod/
 /app/student/
 /app/dashboard/
 
-# Hide most API routes - keeping only 2-3 essential ones
+# Keep Coordinator and Faculty portals visible now (Phase 3 features)
+# /app/coordinator/ - NOW VISIBLE
+# /app/faculty/ - NOW VISIBLE
+
+# Hide AI and advanced API routes
 /app/api/ai/
-/app/api/batches/
-/app/api/coordinator/
 /app/api/export/
-/app/api/faculty/
 /app/api/hod/
 /app/api/notifications/
 /app/api/reports/
-/app/api/rooms/
-/app/api/seed/
 /app/api/student/
-/app/api/subjects/
-/app/api/time-slots/
-/app/api/timetables/
-/app/api/users/
+/app/api/seed/
 
-# Hide most models - keeping only 2-3 core ones
-/models/Batch.ts
+# Show: auth, batches, departments, rooms, subjects, time-slots, timetables, users, coordinator, faculty
+# These are now visible for Phase 3
+
+# Hide advanced models - keeping core ones visible
 /models/Leave.ts
 /models/Notification.ts
-/models/Room.ts
-/models/Subject.ts
-/models/TimeSlot.ts
-/models/Timetable.ts
 
-# Hide most lib files - keeping only essential auth & db
+# Show: User, Department, Batch, Room, Subject, TimeSlot, Timetable
+# These models are now visible
+
+# Hide AI and advanced lib files
 /lib/notifications.ts
-/lib/timetable-generator.ts
 /lib/ai/
 
-# Hide most components - keeping only basic UI
+# Show: auth, db, utils, timetable-generator (basic algorithm)
+# timetable-generator.ts is now visible (basic CSP algorithm without AI)
+
+# Hide AI chatbot and some advanced components
 /components/AIChatbot.tsx
 /components/NotificationBell.tsx
-/components/layout/AdminLayout.tsx
-/components/layout/CoordinatorLayout.tsx
-/components/layout/FacultyLayout.tsx
 /components/layout/HODLayout.tsx
 /components/layout/StudentLayout.tsx
 
-# Hide advanced UI components
-/components/ui/Badge.tsx
-/components/ui/Loading.tsx
-/components/ui/Modal.tsx
-/components/ui/Select.tsx
-/components/ui/StatCard.tsx
-/components/ui/Table.tsx
+# Show most layouts: AdminLayout, CoordinatorLayout, FacultyLayout
+# Show all UI components now - they're needed for the interfaces
